@@ -96,5 +96,5 @@ minutes each because of kernel optimization.
 ```bash
 cd code
 python make_synthetic_dataset.py
-python run_all.py --data ../dataset/synthetic_nthri_tea_yield.csv --out ../results_test --quick
+python run_all.py --data ../dataset/...csv --out ../results_test --quick
 ```
