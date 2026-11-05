@@ -1,11 +1,6 @@
 # TASTFN replication code
 
-Code to reproduce all results of *"A transformer-based spatiotemporal fusion network for
-farm-level tea yield estimation using Landsat-8 NDVI and agrometeorological data"* on your
-own dataset: the proposed TASTFN, the sixteen baseline methods, and the data-analysis
-algorithms. Each algorithm is a separate file; **one execution of a file produces all of
-that algorithm's tables, figures and predictions.**
-
+Code to reproduce results of *"A transformer-based spatiotemporal fusion network for farm-level tea yield estimation using Landsat-8 NDVI and agrometeorological data"*: the proposed TASTFN, the sixteen baseline methods, and the data-analysis algorithms. Each algorithm is a separate file.
 ## Folder layout
 
 ```
