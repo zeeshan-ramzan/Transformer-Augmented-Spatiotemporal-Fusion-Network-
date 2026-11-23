@@ -121,11 +121,3 @@ Wilcoxon signed-rank test on fold RMSE.
 On a CPU the full `tastfn.py` run (≈200 network fits) takes several hours; on an RTX-class GPU
 it is much faster. Use the `--skip-*` options to run parts separately. GPR files take a few
 minutes each because of kernel optimization.
-
-## Testing the code without the real data
-
-```bash
-cd code
-python make_synthetic_dataset.py
-python run_all.py --data ../dataset/...csv --out ../results_test --quick
-```
