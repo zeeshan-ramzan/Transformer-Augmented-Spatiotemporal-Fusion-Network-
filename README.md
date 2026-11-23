@@ -1,6 +1,7 @@
 # TASTFN replication code
 
 Code to reproduce results of *"A transformer-based spatiotemporal fusion network for farm-level tea yield estimation using Landsat-8 NDVI and agrometeorological data"*: the proposed TASTFN, the sixteen baseline methods, and the data-analysis algorithms. Each algorithm is a separate file.
+
 ## Folder layout
 
 ```
@@ -31,6 +32,7 @@ TASTFN_Replication/
 ```bash
 pip install -r requirements.txt
 ```
+
 A CUDA GPU is used automatically by `tastfn.py` and `nas_dnn.py` when available.
 
 ## Running
@@ -43,18 +45,47 @@ python data_analysis.py
 python compare_all.py         # after the algorithms have run
 python run_all.py             # or everything in one go
 ```
-Options for every script: `--data PATH` (default `../dataset/nthri_tea_yield.csv`),
+
+### Useful options
+
+```bash
+python tastfn.py --data ../dataset/my_data.xlsx   # explicit dataset file
+python tastfn.py --quick                          # fast smoke test, not for reporting
+python tastfn.py --hp-protocol inner              # hyperparameter sensitivity on a
+                                                  #   temporally blocked split (default)
+python tastfn.py --hp-protocol stratified         # ... under stratified 10-fold CV
+```
+
+`--hp-protocol` selects the protocol for the hyperparameter sensitivity grid
+only. It does not affect the leave-one-year-out or test-year results, whose
+configuration is fixed in `config.TASTFN_PARAMS`.
+
+### Evaluation protocol in one paragraph
+
+The independent test year (the last year present, 2025) is set aside before
+anything else. Leave-one-year-out cross-validation runs over the remaining
+years: each year in turn is the outer test fold, the most recent remaining
+year is the inner validation year for early stopping and selection, and the
+scaler is fitted on the training years only. Because consecutive six-month
+windows of one plot overlap in five months, blocking is applied position by
+position inside each window: every context position falling in the held-out
+year is masked out of the training and inner-validation tensors and excluded
+from attention, so no training window carries any observation of the held-out
+year. Stratified 10-fold cross-validation is also reported, as an optimistic
+upper bound only. See `SequenceData.with_context` / `.tensors` and `run_loyo`
+in `code/tastfn.py`.
+Options for every script: `--data PATH` (default: first match in `config.DATA_FILE_CANDIDATES`),
 `--out FOLDER` (default `../results`), `--quick` (fast smoke test, not for reporting).
 `tastfn.py` also accepts `--skip-ablation --skip-importance --skip-sensitivity
 --skip-variants --skip-hparam --hp-protocol {inner,stratified} --n-perm N`.
 
 ## Train / validation / test split (as in the paper)
 
-| Design | Training | Model selection / early stopping | Testing |
-|---|---|---|---|
-| **Independent test year** | all years before the last year (2015–2024) | most recent training year (2024) | last year (2025), used once |
-| **Leave-one-year-out CV** (primary) | 9 of the 10 years 2015–2024 | most recent training year of each fold | the held-out year |
-| Stratified 10-fold CV (continuity, optimistic) | 9/10 of observations (yield-decile strata) | 10% of the training fold (TASTFN) | remaining 1/10 |
+| Design                                         | Training                                   | Model selection / early stopping       | Testing                     |
+| ---------------------------------------------- | ------------------------------------------ | -------------------------------------- | --------------------------- |
+| **Independent test year**                      | all years before the last year (2015–2024) | most recent training year (2024)       | last year (2025), used once |
+| **Leave-one-year-out CV** (primary)            | 9 of the 10 years 2015–2024                | most recent training year of each fold | the held-out year           |
+| Stratified 10-fold CV (continuity, optimistic) | 9/10 of observations (yield-decile strata) | 10% of the training fold (TASTFN)      | remaining 1/10              |
 
 * Standardization is fitted on the training years of each fold only.
 * Feature selection (ReliefF + forward selection, `data_analysis.py`) is repeated inside each
